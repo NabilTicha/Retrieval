@@ -1,47 +1,76 @@
-﻿using System.Data.SQLite;
+﻿using System;
+using System.Data;
+using System.Data.SQLite;
+using System.IO;
+using System.Xml.Linq;
 
 namespace ConsoleApp1
 {
     internal class Program
     {
+        
         static void Main(string[] args)
         {
             Console.WriteLine("Hello, World!");
-            string connectionString = "Data Source=database.db";
+            string connectionString = "Data Source=autompg.db";
             using (SQLiteConnection connection = new SQLiteConnection(connectionString))
             {
                 connection.Open();
 
-
                 // Create the table
-                using (SQLiteCommand command = new SQLiteCommand("CREATE TABLE IF NOT EXISTS MyTable (Id INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT)", connection))
+                Console.WriteLine("done reading db");
+                while (true)
                 {
-                    command.ExecuteNonQuery();
-                }
-
-                // Insert an item into the table
-                using (SQLiteCommand command = new SQLiteCommand("INSERT INTO MyTable (Name) VALUES (@name)", connection))
-                {
-                    command.Parameters.AddWithValue("@name", "John Doe");
-                    command.ExecuteNonQuery();
-                }
-
-                // Query for the item
-                using (SQLiteCommand command = new SQLiteCommand("SELECT * FROM MyTable", connection))
-                {
-                    using (SQLiteDataReader reader = command.ExecuteReader())
+                    using (SQLiteCommand command = new SQLiteCommand(Console.ReadLine(), connection))
                     {
-                        while (reader.Read())
+                        using (SQLiteDataReader reader = command.ExecuteReader())
                         {
-                            int id = reader.GetInt32(0);
-                            string name = reader.GetString(1);
+                            // Get the column names
+                            var columns = new string[reader.FieldCount];
+                            for (int i = 0; i < reader.FieldCount; i++)
+                            {
+                                columns[i] = reader.GetName(i);
+                            }
 
-                            Console.WriteLine($"Id: {id}, Name: {name}");
+                            // Display the column names
+                            Console.WriteLine(string.Join(", ", columns));
+
+                            if (reader.HasRows)
+                            {
+                                // Concatenate the result into a single string
+                                string result = string.Empty;
+
+                                while (reader.Read())
+                                {
+                                    for (int i = 0; i < reader.FieldCount; i++)
+                                    {
+                                        result += reader[i] + "\t";
+                                    }
+
+                                    result += Environment.NewLine;
+                                }
+
+                                // Print the result
+                                Console.WriteLine(result);
+                            }
+                            else
+                            {
+                                Console.WriteLine("No rows found.");
+                            }
                         }
                     }
                 }
+                // Query for the item
 
                 connection.Close();
+            }
+
+            static string FirstN(char[] chars, int n)
+            {
+                char[] result = new char[n];
+                for (int i = 0; i < n; i++)
+                    result[i] = chars[i];
+                return new string(result);
             }
         }
     }
