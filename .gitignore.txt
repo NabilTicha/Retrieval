@@ -1,0 +1,27 @@
+# Ignore build output directories
+/bin/
+/obj/
+
+# Ignore Csproj
+*.csproj
+
+# Ignore NuGet package directories
+/packages/
+
+# Ignore user-specific files
+*.user
+
+# Ignore Visual Studio files
+.vs/
+*.suo
+*.sln.docstates
+*.userprefs
+
+# Ignore JetBrains Rider files
+.idea/
+
+# Ignore Mac-specific files
+.DS_Store
+
+# Ignore Windows-specific files
+Thumbs.db
