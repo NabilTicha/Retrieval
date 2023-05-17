@@ -19,6 +19,7 @@ namespace ConsoleApp1
 
                 // Create the table
                 Console.WriteLine("done reading db");
+
                 while (true)
                 {
                     using (SQLiteCommand command = new SQLiteCommand(Console.ReadLine(), connection))
@@ -72,6 +73,41 @@ namespace ConsoleApp1
                     result[i] = chars[i];
                 return new string(result);
             }
+        }
+
+        static void createMetaDB()
+        {
+            string connectionString = "Data Source=autompg.db";
+            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+            {
+                connection.Open();
+
+                // Create the table
+                Console.WriteLine("done reading db");
+
+                string query = "SELECT * FROM autompg";
+                using (SQLiteCommand command = new SQLiteCommand(query, connection))
+                {
+                    // Execute the query and obtain a data reader
+                    using (SQLiteDataReader reader = command.ExecuteReader())
+                    {
+                        // Read the rows returned by the query
+                        while (reader.Read())
+                        {
+                            // Access the column values for each row
+                            //int id = reader.GetInt32(0);  // Assuming the first column is an integer (change the index if needed)
+                            //string name = reader.GetString(1);  // Assuming the second column is a string (change the index if needed)
+
+                            // Use the retrieved values as needed
+
+                            // Alles inlezen en daarna gelijk van alles IDF berekenen
+                        }
+                    }
+                }
+            }
+
+            //Load in workload here
+            //Alles inlezen en dan die andere dingen van de workload termen berekenen
         }
     }
 }
