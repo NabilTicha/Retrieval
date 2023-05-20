@@ -1,20 +1,25 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\menno\\source\\repos\\Retrieval\\ConsoleApp1\\ConsoleApp1.csproj": {}
+    "D:\\UU\\DAR\\P1\\Retrieval\\ConsoleApp1\\ConsoleApp1.csproj": {}
   },
   "projects": {
-    "C:\\Users\\menno\\source\\repos\\Retrieval\\ConsoleApp1\\ConsoleApp1.csproj": {
+    "D:\\UU\\DAR\\P1\\Retrieval\\ConsoleApp1\\ConsoleApp1.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\menno\\source\\repos\\Retrieval\\ConsoleApp1\\ConsoleApp1.csproj",
+        "projectUniqueName": "D:\\UU\\DAR\\P1\\Retrieval\\ConsoleApp1\\ConsoleApp1.csproj",
         "projectName": "ConsoleApp1",
-        "projectPath": "C:\\Users\\menno\\source\\repos\\Retrieval\\ConsoleApp1\\ConsoleApp1.csproj",
-        "packagesPath": "C:\\Users\\menno\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\menno\\source\\repos\\Retrieval\\ConsoleApp1\\obj\\",
+        "projectPath": "D:\\UU\\DAR\\P1\\Retrieval\\ConsoleApp1\\ConsoleApp1.csproj",
+        "packagesPath": "C:\\Users\\Nabil\\.nuget\\packages\\",
+        "outputPath": "D:\\UU\\DAR\\P1\\Retrieval\\ConsoleApp1\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
+          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
+        ],
         "configFilePaths": [
-          "C:\\Users\\menno\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\Nabil\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -61,7 +66,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.102\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.101\\RuntimeIdentifierGraph.json"
         }
       }
     }
