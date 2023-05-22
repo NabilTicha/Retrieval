@@ -9,6 +9,7 @@ using System.Xml.Linq;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
+using System.Web;
 
 namespace ConsoleApp1
 {
@@ -84,10 +85,51 @@ namespace ConsoleApp1
             }
             return false;
         }
+
+        private static string[] ReattachStrings(string[] splitQuery)
+        {
+            List<String> result = new List<String>();
+
+            for(int i = 0; i < splitQuery.Length; i++)
+            {
+                if(splitQuery[i][0] != '\'')
+                {
+                    result.Add(splitQuery[i]);
+                }
+
+                else
+                {
+                    string temp = "";
+                    while (splitQuery[i][splitQuery[i].Length - 1] != '\'')
+                    {
+                        temp += (splitQuery[i] + " ");
+                        i++;
+                    }
+
+                    temp += splitQuery[i];
+                    result.Add(temp);
+                }
+            }
+
+            return result.ToArray();
+        }
         private static WorkLoadQuery ReadWorkLoadQuery(string input)
         {
             WorkLoadQuery query = new WorkLoadQuery();
-            string[] splitQuery = input.Split(' ', StringSplitOptions.TrimEntries);
+            string[] splitQuery0 = input.Split(' ', StringSplitOptions.TrimEntries);
+            string[] splitQuery = ReattachStrings(splitQuery0);
+            //for (int x = 0;  x < splitQuery.Length; x++)
+            //{
+            //    if (splitQuery[x][0] == '\'' && splitQuery[x][splitQuery[x].Length - 1] != '\'')
+            //    {
+
+            //    }
+
+            //    else
+            //    {
+            //        splitQueryFixed[x] = splitQuery[x];
+            //    }
+            //}
             query.times = int.Parse(splitQuery[0]);
             int i;
             for (i = 0; !StrEq(splitQuery[i], "WHERE") ; i++) ;
@@ -179,6 +221,7 @@ namespace ConsoleApp1
         static void Main(string[] args)
         {
             Init();
+
             /*
             string test = "(\'hello\',\'im\',\'bob\')";
             Console.WriteLine(test);
@@ -189,7 +232,7 @@ namespace ConsoleApp1
             Console.WriteLine("values: "+ value.Length);
             for(int i = 0; i < value.Length; i++)
                 Console.WriteLine(value[i]);*/
-            /*
+
             HelperFunctions.DisplayStrings(HelperFunctions.ExtractFromINclause("(\'ddf fd\',\'gtgd\')"));
 
 
@@ -200,25 +243,44 @@ namespace ConsoleApp1
             string query;
             while ((query = sr.ReadLine()).Length > 3)
             {
-                 queries.Add(query);
+                queries.Add(query);
             }
             // nu nemen we een willekeurige query en lezen we hem in 
             Console.WriteLine("Query ++++++++++++++++++++++\n" + "7 times: SELECT * FROM autompg WHERE displacement = \'75\' AND model_year = \'74\' AND type IN (\'station wagon\',\'pickup\')");
             Console.WriteLine("What was read -------------------------");
             WorkLoadQuery ww = ReadWorkLoadQuery("7 times: SELECT * FROM autompg WHERE displacement = \'75\' AND model_year = \'74\' AND type IN (\'station wagon\',\'pickup\')");
             DisplayQuery(ww);
-            Random random= new Random();
+            string testQuery = "68 times: SELECT * FROM autompg WHERE mpg = \'15\' AND displacement = \'107\' AND horsepower = \'120\' AND brand = \'bmw\' AND type = \'station wagon\'";
+            Console.WriteLine("Query ++++++++++++++++++++++\n" + testQuery);
+            Console.WriteLine("What was read -------------------------");
+            WorkLoadQuery www = ReadWorkLoadQuery(testQuery);
+            DisplayQuery(www);
+            Random random = new Random();
             while (true)
             {
                 int rindex = random.Next(0, queries.Count);
-                Console.WriteLine("Query ++++++++++++++++++++++\n" +queries[rindex]);
+                Console.WriteLine("Query ++++++++++++++++++++++\n" + queries[rindex]);
                 Console.WriteLine("What was read -------------------------");
                 WorkLoadQuery w = ReadWorkLoadQuery(queries[rindex]);
                 DisplayQuery(w);
                 Thread.Sleep(4000);
-            }*/
-            SQLiteConnection connection = new SQLiteConnection()
-            SQLiteCommand command = new SQLiteCommand()
+            }
+            //string WLQuery = "124 times: SELECT * FROM autompg WHERE model_year = '82' AND type = 'sedan'";
+
+
+            //SQLiteConnection connection = new SQLiteConnection();
+            //SQLiteCommand WLCommand = new SQLiteCommand(WLQuery, connection);
+
+
+
+            //using (SQLiteDataReader dataReader = WLCommand.ExecuteReader())
+            //{
+            //    while(dataReader.Read())
+            //    {
+            //        int id = dataReader.GetInt32(dataReader.GetOrdinal("id"));
+            //        Console.WriteLine(id);
+            //    }
+            //}
 
             return;
             /*
