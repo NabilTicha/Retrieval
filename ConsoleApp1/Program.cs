@@ -7,6 +7,8 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Xml.Linq;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Reflection;
 
 namespace ConsoleApp1
 {
@@ -90,11 +92,17 @@ namespace ConsoleApp1
             int i;
             for (i = 0; !StrEq(splitQuery[i], "WHERE") ; i++) ;
             i++;
-            
+            // at this i, the queries start, each parameter is either an IN clause or an = clause
+            // ReadWorkLoadQueryH reads a single part of a query, each part is separated by an AND
+            ReadWorkLoadQueryH(query, attributeIndices[splitQuery[i]], splitQuery, i);
+            // here we process all of the potential ANDs
+            for (; i < splitQuery.Length; i++)
+                if (StrEq(splitQuery[i], "AND"))
+                    ReadWorkLoadQueryH(query, attributeIndices[splitQuery[i+1]], splitQuery, i+1);
             return query;
         }
         
-        private static WorkLoadQuery ReadWorkLoadQueryH(
+        private static void ReadWorkLoadQueryH(
             WorkLoadQuery workLoadQuery, // the query we are storing the read information in
             int attrindex, // the collumn this read operation is about
             string[] splitQuery, // the word of the query
@@ -103,16 +111,26 @@ namespace ConsoleApp1
         {
             // first we need to establish whether we are dealing with a single value or
             // an IN clause
-            if (StrEq(splitQuery[indexInSplitQuery], "=")) // a single value
+            if (StrEq(splitQuery[indexInSplitQuery + 1], "=")) // a single value
             { // after this = sign there is just one value to be parsed
-                workLoadQuery.selectedAttributes[attrindex] = true; // note that we selected on this attribute
-                
+                string[] value = splitQuery[indexInSplitQuery +2].Split('\'',StringSplitOptions.RemoveEmptyEntries);
+                workLoadQuery.ThrowValuesIn(attrindex, value);
             }
-            else if (StrEq(splitQuery[indexInSplitQuery], "IN")) // an IN clause
+            else if (StrEq(splitQuery[indexInSplitQuery + 1], "IN")) // an IN clause
             { // what now comes is a single word, that is a csv list of values between brackets
-
+                string inClause = "";
+                int i = indexInSplitQuery + 2;
+                inClause += splitQuery[i];
+                while (splitQuery[i][splitQuery[i].Length - 1] != ')') // while we dont encounter the word with the closing bracket
+                {
+                    inClause += " " + splitQuery[i + 1]; // add the strings to the in clause statement, with the lost space back
+                    i++;
+                }
+                string[] inputs = HelperFunctions.ExtractFromINclause(inClause);
+                workLoadQuery.ThrowValuesIn(attrindex, inputs);
             }
             else throw new Exception();
+
         }
         static void Init()
         {
@@ -129,13 +147,79 @@ namespace ConsoleApp1
             attributeIndices.Add("brand", 9);
             attributeIndices.Add("model", 10);
             attributeIndices.Add("type", 11);
+            string[] indexAttributes_ = new string[12]
+            {
+                "id",
+                "mpg",
+                "cylinders",
+                "displacement",
+                "horsepower",
+                "weight",
+                "acceleration",
+                "model_year",
+                "origin",
+                "brand",
+                "model",
+                "type"
+            };
+            indexAttributes = indexAttributes_;
+        }
+        static string[] indexAttributes;
+        private static void DisplayQuery(WorkLoadQuery w)
+        {
+            Console.Write("times: " + w.times);
+            for (int i = 0; i < w.selectedAttributes.Length; i++)
+                if (w.selectedAttributes[i])
+                {
+                    Console.Write( "," + indexAttributes[i] + ":");
+                    w.DisplayStringValue(i);
+                }
+            Console.WriteLine("\n");
         }
         static void Main(string[] args)
         {
-            throw new Exception();
-            string[] spl = "\'dasas\'".Split('\'');
+            Init();
+            /*
+            string test = "(\'hello\',\'im\',\'bob\')";
+            Console.WriteLine(test);
+            string[] spl = HelperFunctions.ExtractFromINclause(test);
             for (int i = 0; i < spl.Length; i++)
-                Console.WriteLine(spl[i] + "\n");
+                Console.WriteLine(spl[i]);
+            string[] value = "\'hdos\'".Split('\'', StringSplitOptions.RemoveEmptyEntries);
+            Console.WriteLine("values: "+ value.Length);
+            for(int i = 0; i < value.Length; i++)
+                Console.WriteLine(value[i]);*/
+            /*
+            HelperFunctions.DisplayStrings(HelperFunctions.ExtractFromINclause("(\'ddf fd\',\'gtgd\')"));
+
+
+            StreamReader sr = new StreamReader(workloadFilepath);
+            sr.ReadLine();
+            sr.ReadLine();
+            List<string> queries = new List<string>();
+            string query;
+            while ((query = sr.ReadLine()).Length > 3)
+            {
+                 queries.Add(query);
+            }
+            // nu nemen we een willekeurige query en lezen we hem in 
+            Console.WriteLine("Query ++++++++++++++++++++++\n" + "7 times: SELECT * FROM autompg WHERE displacement = \'75\' AND model_year = \'74\' AND type IN (\'station wagon\',\'pickup\')");
+            Console.WriteLine("What was read -------------------------");
+            WorkLoadQuery ww = ReadWorkLoadQuery("7 times: SELECT * FROM autompg WHERE displacement = \'75\' AND model_year = \'74\' AND type IN (\'station wagon\',\'pickup\')");
+            DisplayQuery(ww);
+            Random random= new Random();
+            while (true)
+            {
+                int rindex = random.Next(0, queries.Count);
+                Console.WriteLine("Query ++++++++++++++++++++++\n" +queries[rindex]);
+                Console.WriteLine("What was read -------------------------");
+                WorkLoadQuery w = ReadWorkLoadQuery(queries[rindex]);
+                DisplayQuery(w);
+                Thread.Sleep(4000);
+            }*/
+            SQLiteConnection connection = new SQLiteConnection()
+            SQLiteCommand command = new SQLiteCommand()
+
             return;
             /*
             StreamReader workloadReader2 = new StreamReader(workloadFilepath);
@@ -444,7 +528,49 @@ namespace ConsoleApp1
         public string[] autompg_model;
         public string[] autompg_type;
         
-        public WorkLoadQuery ThrowValuesIn(
+        public void DisplayStringValue(int attrindex)
+        {
+            switch (attrindex)
+            {
+                case 0: // id, int
+                    HelperFunctions.DisplayInts(autompg_id);
+                    break;
+                case 1: // mpg
+                    HelperFunctions.DisplayFloats(autompg_mpg);
+                    break;
+                case 2: // cylinders
+                    HelperFunctions.DisplayInts(autompg_cylinders);
+                    break;
+                case 3: // displacement
+                    HelperFunctions.DisplayFloats(autompg_displacement);
+                    break;
+                case 4: // horsepower
+                    HelperFunctions.DisplayFloats(autompg_horsepower);
+                    break;
+                case 5: // weight
+                    HelperFunctions.DisplayFloats(autompg_weight);
+                    break;
+                case 6: // acceleration
+                    HelperFunctions.DisplayFloats(autompg_acceleration);
+                    break;
+                case 7: // model_year
+                    HelperFunctions.DisplayInts(autompg_model_year);
+                    break;
+                case 8: // origin
+                    HelperFunctions.DisplayInts(autompg_origin);
+                    break;
+                case 9: // brand
+                    HelperFunctions.DisplayStrings(autompg_brand);
+                    break;
+                case 10: // model
+                    HelperFunctions.DisplayStrings(autompg_model);
+                    break;
+                case 11: // type
+                    HelperFunctions.DisplayStrings(autompg_type);
+                    break;
+            }
+        }
+        public void ThrowValuesIn(
             int attrindex,
             string[] toParse)
         {
@@ -452,40 +578,40 @@ namespace ConsoleApp1
             switch (attrindex)
             {
                 case 0: // id, int
-                    workLoadQuery.autompg_id = HelperFunctions.ParseInts(toParse);
+                    autompg_id = HelperFunctions.ParseInts(toParse);
                     break;
                 case 1: // mpg
-                    workLoadQuery.autompg_mpg = HelperFunctions.ParseFloats(toParse);
+                    autompg_mpg = HelperFunctions.ParseFloats(toParse);
                     break;
                 case 2: // cylinders
-                    workLoadQuery.autompg_cylinders = HelperFunctions.ParseInts(toParse);
+                    autompg_cylinders = HelperFunctions.ParseInts(toParse);
                     break;
                 case 3: // displacement
-                    workLoadQuery.autompg_displacement = HelperFunctions.ParseFloats(toParse);
+                    autompg_displacement = HelperFunctions.ParseFloats(toParse);
                     break;
                 case 4: // horsepower
-                    workLoadQuery.autompg_horsepower = HelperFunctions.ParseFloats(toParse);
+                    autompg_horsepower = HelperFunctions.ParseFloats(toParse);
                     break;
                 case 5: // weight
-                    workLoadQuery.autompg_weight = HelperFunctions.ParseFloats(toParse);
+                    autompg_weight = HelperFunctions.ParseFloats(toParse);
                     break;
                 case 6: // acceleration
-                    workLoadQuery.autompg_acceleration = HelperFunctions.ParseFloats(toParse);
+                    autompg_acceleration = HelperFunctions.ParseFloats(toParse);
                     break;
                 case 7: // model_year
-                    workLoadQuery.autompg_model_year = HelperFunctions.ParseInts(toParse);
+                    autompg_model_year = HelperFunctions.ParseInts(toParse);
                     break;
                 case 8: // origin
-                    workLoadQuery.autompg_origin = HelperFunctions.ParseInts(toParse);
+                    autompg_origin = HelperFunctions.ParseInts(toParse);
                     break;
                 case 9: // brand
-                    workLoadQuery.autompg_brand = toParse;
+                    autompg_brand = toParse;
                     break;
                 case 10: // model
-                    workLoadQuery.autompg_model = toParse;
+                    autompg_model = toParse;
                     break;
                 case 11: // type
-                    workLoadQuery.autompg_type = toParse;
+                    autompg_type = toParse;
                     break;
             }
         }
