@@ -90,8 +90,29 @@ namespace ConsoleApp1
             int i;
             for (i = 0; !StrEq(splitQuery[i], "WHERE") ; i++) ;
             i++;
-            Console.WriteLine("first after WHERE: " + splitQuery[i]);
+            
             return query;
+        }
+        
+        private static WorkLoadQuery ReadWorkLoadQueryH(
+            WorkLoadQuery workLoadQuery, // the query we are storing the read information in
+            int attrindex, // the collumn this read operation is about
+            string[] splitQuery, // the word of the query
+            int indexInSplitQuery // where we are looking within the word of the query
+            )
+        {
+            // first we need to establish whether we are dealing with a single value or
+            // an IN clause
+            if (StrEq(splitQuery[indexInSplitQuery], "=")) // a single value
+            { // after this = sign there is just one value to be parsed
+                workLoadQuery.selectedAttributes[attrindex] = true; // note that we selected on this attribute
+                
+            }
+            else if (StrEq(splitQuery[indexInSplitQuery], "IN")) // an IN clause
+            { // what now comes is a single word, that is a csv list of values between brackets
+
+            }
+            else throw new Exception();
         }
         static void Init()
         {
@@ -111,6 +132,11 @@ namespace ConsoleApp1
         }
         static void Main(string[] args)
         {
+            throw new Exception();
+            string[] spl = "\'dasas\'".Split('\'');
+            for (int i = 0; i < spl.Length; i++)
+                Console.WriteLine(spl[i] + "\n");
+            return;
             /*
             StreamReader workloadReader2 = new StreamReader(workloadFilepath);
 
@@ -404,19 +430,65 @@ namespace ConsoleApp1
         {
             selectedAttributes = new bool[12];
         }
-
-        public int autompg_id;
-        public float autompg_mpg;// histogram bin width:6
-        public int autompg_cylinders; // histo width:3
-        public float autompg_displacement; // histo width:70
-        public float autompg_horsepower;// histo width: 60
-        public float autompg_weight;// histo width: 600
-        public float autompg_acceleration;// histo width: 4
-        public int autompg_model_year;// histo width: 1 (no histogram)
-        public int autompg_origin;// histo width: 1
-        public string autompg_brand;
-        public string autompg_model;
-        public string autompg_type;
+        
+        public int[] autompg_id;
+        public float[] autompg_mpg;// histogram bin width:6
+        public int[] autompg_cylinders; // histo width:3
+        public float[] autompg_displacement; // histo width:70
+        public float[] autompg_horsepower;// histo width: 60
+        public float[] autompg_weight;// histo width: 600
+        public float[] autompg_acceleration;// histo width: 4
+        public int[] autompg_model_year;// histo width: 1 (no histogram)
+        public int[] autompg_origin;// histo width: 1
+        public string[] autompg_brand;
+        public string[] autompg_model;
+        public string[] autompg_type;
+        
+        public WorkLoadQuery ThrowValuesIn(
+            int attrindex,
+            string[] toParse)
+        {
+            selectedAttributes[attrindex] = true;
+            switch (attrindex)
+            {
+                case 0: // id, int
+                    workLoadQuery.autompg_id = HelperFunctions.ParseInts(toParse);
+                    break;
+                case 1: // mpg
+                    workLoadQuery.autompg_mpg = HelperFunctions.ParseFloats(toParse);
+                    break;
+                case 2: // cylinders
+                    workLoadQuery.autompg_cylinders = HelperFunctions.ParseInts(toParse);
+                    break;
+                case 3: // displacement
+                    workLoadQuery.autompg_displacement = HelperFunctions.ParseFloats(toParse);
+                    break;
+                case 4: // horsepower
+                    workLoadQuery.autompg_horsepower = HelperFunctions.ParseFloats(toParse);
+                    break;
+                case 5: // weight
+                    workLoadQuery.autompg_weight = HelperFunctions.ParseFloats(toParse);
+                    break;
+                case 6: // acceleration
+                    workLoadQuery.autompg_acceleration = HelperFunctions.ParseFloats(toParse);
+                    break;
+                case 7: // model_year
+                    workLoadQuery.autompg_model_year = HelperFunctions.ParseInts(toParse);
+                    break;
+                case 8: // origin
+                    workLoadQuery.autompg_origin = HelperFunctions.ParseInts(toParse);
+                    break;
+                case 9: // brand
+                    workLoadQuery.autompg_brand = toParse;
+                    break;
+                case 10: // model
+                    workLoadQuery.autompg_model = toParse;
+                    break;
+                case 11: // type
+                    workLoadQuery.autompg_type = toParse;
+                    break;
+            }
+        }
 
     }
 
