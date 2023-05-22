@@ -6,6 +6,7 @@ using System.Data.SQLite;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Xml.Linq;
+using System.Collections.Generic;
 
 namespace ConsoleApp1
 {
@@ -21,7 +22,7 @@ namespace ConsoleApp1
             workloadFilepath = "../../../../workload.txt";
 
 
-
+        static Dictionary<string, int> attributeIndices;
         private static int Bin(int input, int histowidth)
         {
             return input / histowidth;
@@ -92,10 +93,25 @@ namespace ConsoleApp1
             Console.WriteLine("first after WHERE: " + splitQuery[i]);
             return query;
         }
-
+        static void Init()
+        {
+            attributeIndices = new Dictionary<string, int>();
+            attributeIndices.Add("id", 0);
+            attributeIndices.Add("mpg", 1);
+            attributeIndices.Add("cylinders", 2);
+            attributeIndices.Add("displacement", 3);
+            attributeIndices.Add("horsepower", 4);
+            attributeIndices.Add("weight", 5);
+            attributeIndices.Add("acceleration", 6);
+            attributeIndices.Add("model_year", 7);
+            attributeIndices.Add("origin", 8);
+            attributeIndices.Add("brand", 9);
+            attributeIndices.Add("model", 10);
+            attributeIndices.Add("type", 11);
+        }
         static void Main(string[] args)
         {
-
+            /*
             StreamReader workloadReader2 = new StreamReader(workloadFilepath);
 
             workloadReader2.ReadLine(); // the first two lines are not relevant
@@ -103,7 +119,7 @@ namespace ConsoleApp1
             WorkLoadQuery q = ReadWorkLoadQuery(workloadReader2.ReadLine());
             Console.WriteLine("times: " + q.times);
            
-            return;
+            return;*/
 
             // for testing, i first delete all the files affected by a previous run of the program, this keeps things clean
             //File.Delete(autompgDatabaseFilepath);
