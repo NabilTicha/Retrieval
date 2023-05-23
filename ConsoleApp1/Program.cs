@@ -1,14 +1,4 @@
-﻿using System;
-using System.Data;
-using System.Data.Entity.ModelConfiguration.Configuration;
-using System.Data.SqlClient;
-using System.Data.SQLite;
-using System.IO;
-using System.Runtime.InteropServices;
-using System.Xml.Linq;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Reflection;
+﻿using System.Data.SQLite;
 using System.Web;
 
 namespace ConsoleApp1
@@ -24,6 +14,17 @@ namespace ConsoleApp1
             metadbFilepath = "../../../../metadb.db",
             workloadFilepath = "../../../../workload.txt";
 
+        const float autompg_mpg_histowidth = 6;// histogram bin width:6
+        const int autompg_cylinders_histowidth = 3;// histo width:3
+        const float autompg_displacement_histowidth = 70;// histo width:70
+        const float autompg_horsepower_histowidth = 60;// histo width: 60
+        const float autompg_weight_histowidth = 600;// histo width: 600
+        const float autompg_acceleration_histowidth = 4;
+        static MapIncrement<float> floatIncrementer = new MapIncrement<float>();
+        static MapIncrement<int> intIncrementer = new MapIncrement<int>();
+        static MapIncrement<string> stringIncrementer = new MapIncrement<string>();
+        static MapIncrement<(string,string)> stringTupleIncrementer = new MapIncrement<(string,string)>();
+
 
         static Dictionary<string, int> attributeIndices;
         private static int Bin(int input, int histowidth)
@@ -36,7 +37,7 @@ namespace ConsoleApp1
         }
         private static bool CheckProperAutompgInsertCommand(string input, out string output)
         {
-            if (input.Length <= 3)
+            if (input.Length <= 8)
             {
                 output = default(string);
                 return false;
@@ -118,18 +119,6 @@ namespace ConsoleApp1
             WorkLoadQuery query = new WorkLoadQuery();
             string[] splitQuery0 = input.Split(' ', StringSplitOptions.TrimEntries);
             string[] splitQuery = ReattachStrings(splitQuery0);
-            //for (int x = 0;  x < splitQuery.Length; x++)
-            //{
-            //    if (splitQuery[x][0] == '\'' && splitQuery[x][splitQuery[x].Length - 1] != '\'')
-            //    {
-
-            //    }
-
-            //    else
-            //    {
-            //        splitQueryFixed[x] = splitQuery[x];
-            //    }
-            //}
             query.times = int.Parse(splitQuery[0]);
             int i;
             for (i = 0; !StrEq(splitQuery[i], "WHERE") ; i++) ;
@@ -221,7 +210,6 @@ namespace ConsoleApp1
         static void Main(string[] args)
         {
             Init();
-
             /*
             string test = "(\'hello\',\'im\',\'bob\')";
             Console.WriteLine(test);
@@ -233,38 +221,33 @@ namespace ConsoleApp1
             for(int i = 0; i < value.Length; i++)
                 Console.WriteLine(value[i]);*/
 
-            HelperFunctions.DisplayStrings(HelperFunctions.ExtractFromINclause("(\'ddf fd\',\'gtgd\')"));
+            //HelperFunctions.DisplayStrings(HelperFunctions.ExtractFromINclause("(\'ddf fd\',\'gtgd\')"));
 
 
-            StreamReader sr = new StreamReader(workloadFilepath);
-            sr.ReadLine();
-            sr.ReadLine();
-            List<string> queries = new List<string>();
-            string query;
-            while ((query = sr.ReadLine()).Length > 3)
-            {
-                queries.Add(query);
-            }
+            
             // nu nemen we een willekeurige query en lezen we hem in 
-            Console.WriteLine("Query ++++++++++++++++++++++\n" + "7 times: SELECT * FROM autompg WHERE displacement = \'75\' AND model_year = \'74\' AND type IN (\'station wagon\',\'pickup\')");
-            Console.WriteLine("What was read -------------------------");
-            WorkLoadQuery ww = ReadWorkLoadQuery("7 times: SELECT * FROM autompg WHERE displacement = \'75\' AND model_year = \'74\' AND type IN (\'station wagon\',\'pickup\')");
-            DisplayQuery(ww);
-            string testQuery = "68 times: SELECT * FROM autompg WHERE mpg = \'15\' AND displacement = \'107\' AND horsepower = \'120\' AND brand = \'bmw\' AND type = \'station wagon\'";
-            Console.WriteLine("Query ++++++++++++++++++++++\n" + testQuery);
-            Console.WriteLine("What was read -------------------------");
-            WorkLoadQuery www = ReadWorkLoadQuery(testQuery);
-            DisplayQuery(www);
-            Random random = new Random();
-            while (true)
-            {
-                int rindex = random.Next(0, queries.Count);
-                Console.WriteLine("Query ++++++++++++++++++++++\n" + queries[rindex]);
-                Console.WriteLine("What was read -------------------------");
-                WorkLoadQuery w = ReadWorkLoadQuery(queries[rindex]);
-                DisplayQuery(w);
-                Thread.Sleep(4000);
-            }
+            //Console.WriteLine("Query ++++++++++++++++++++++\n" + "7 times: SELECT * FROM autompg WHERE displacement = \'75\' AND model_year = \'74\' AND type IN (\'station wagon\',\'pickup\')");
+            //Console.WriteLine("What was read -------------------------");
+            //WorkLoadQuery ww = ReadWorkLoadQuery("7 times: SELECT * FROM autompg WHERE displacement = \'75\' AND model_year = \'74\' AND type IN (\'station wagon\',\'pickup\')");
+            //DisplayQuery(ww);
+            //string testQuery = "68 times: SELECT * FROM autompg WHERE mpg = \'15\' AND displacement = \'107\' AND horsepower = \'120\' AND brand = \'bmw\' AND type = \'station wagon\'";
+            //Console.WriteLine("Query ++++++++++++++++++++++\n" + testQuery);
+            //Console.WriteLine("What was read -------------------------");
+            //WorkLoadQuery www = ReadWorkLoadQuery(testQuery);
+            //DisplayQuery(www);
+            //Random random = new Random();
+
+            //while (true)
+            //{
+            //    int rindex = random.Next(0, queries.Count);
+            //    Console.WriteLine("Query ++++++++++++++++++++++\n" + queries[rindex]);
+            //    Console.WriteLine("What was read -------------------------");
+            //    WorkLoadQuery w = ReadWorkLoadQuery(queries[rindex]);
+            //    DisplayQuery(w);
+            //    Thread.Sleep(4000);
+            //}
+
+
             //string WLQuery = "124 times: SELECT * FROM autompg WHERE model_year = '82' AND type = 'sedan'";
 
 
@@ -281,8 +264,6 @@ namespace ConsoleApp1
             //        Console.WriteLine(id);
             //    }
             //}
-
-            return;
             /*
             StreamReader workloadReader2 = new StreamReader(workloadFilepath);
 
@@ -327,12 +308,12 @@ namespace ConsoleApp1
             // storing the values of autompg internally for preprocessing
             int n = sqlCommands.Length - 1; // the -1 is because command 0 just sets up the table
             int[] autompg_id = new int[n];
-            float[] autompg_mpg = new float[n]; float autompg_mpg_histowidth = 6;// histogram bin width:6
-            int[] autompg_cylinders = new int[n]; int autompg_cylinders_histowidth = 3;// histo width:3
-            float[] autompg_displacement = new float[n]; float autompg_displacement_histowidth = 70;// histo width:70
-            float[] autompg_horsepower = new float[n]; float autompg_horsepower_histowidth = 60;// histo width: 60
-            float[] autompg_weight = new float[n]; float autompg_weight_histowidth = 600;// histo width: 600
-            float[] autompg_acceleration = new float[n]; float autompg_acceleration_histowidth = 4;// histo width: 4
+            float[] autompg_mpg = new float[n];// histogram bin width:6
+            int[] autompg_cylinders = new int[n];// histo width:3
+            float[] autompg_displacement = new float[n];// histo width:70
+            float[] autompg_horsepower = new float[n]; // histo width: 60
+            float[] autompg_weight = new float[n]; // histo width: 600
+            float[] autompg_acceleration = new float[n]; // histo width: 4
             int[] autompg_model_year = new int[n];// histo width: 1 (no histogram)
             int[] autompg_origin = new int[n];// histo width: 1
             string[] autompg_brand = new string[n];
@@ -440,36 +421,195 @@ namespace ConsoleApp1
             */
 
             // now that the idf's are calculated, it is time to calculate the QF's
-            Map<int, int> autompg_mpg_rqf = new Map<int, int>();
-            Map<int, int> autompg_cylinders_rqf = new Map<int, int>();
-            Map<int, int> autompg_displacement_rqf = new Map<int, int>();
-            Map<int, int> autompg_horsepower_rqf = new Map<int, int>();
-            Map<int, int> autompg_weight_rqf = new Map<int, int>();
-            Map<int, int> autompg_acceleration_rqf = new Map<int, int>();
+            Map<int, int> autompg_mpg_rqf = new Map<int, int>();//
+            Map<int, int> autompg_cylinders_rqf = new Map<int, int>();//
+            Map<int, int> autompg_displacement_rqf = new Map<int, int>();//
+            Map<int, int> autompg_horsepower_rqf = new Map<int, int>();//
+            Map<int, int> autompg_weight_rqf = new Map<int, int>();//
+            Map<int, int> autompg_acceleration_rqf = new Map<int, int>();//
             Map<int, int> autompg_model_year_rqf = new Map<int, int>();
             Map<int, int> autompg_origin_rqf = new Map<int, int>();
             Map<string, int> autompg_brand_rqf = new Map<string, int>();
             Map<string, int> autompg_model_rqf = new Map<string, int>();
             Map<string, int> autompg_type_rqf = new Map<string, int>();
 
-            StreamReader workloadReader = new StreamReader(workloadFilepath);
 
-            workloadReader.ReadLine(); // the first two lines are not relevant
-            workloadReader.ReadLine();
+            StreamReader sr = new StreamReader(workloadFilepath);
+            sr.ReadLine();
+            sr.ReadLine();
+            List<WorkLoadQuery> queries = new List<WorkLoadQuery>();
+            string query;
+            while ((query = sr.ReadLine()).Length > 3)
+            {
+                queries.Add(ReadWorkLoadQuery(query));
+            }
+
+            Map<string, int> autompg_brand_in_clause_occurences = new Map<string, int>();
+            Map<string, int> autompg_model_in_clause_occurences = new Map<string, int>();
+            Map<string, int> autompg_type_in_clause_occurences = new Map<string, int>();
+
+            Map<(string, string), int> autompg_brand_in_clause_intersections = new Map<(string, string), int>();
+            Map<(string, string), int> autompg_model_in_clause_intersections = new Map<(string, string), int>();
+            Map<(string, string), int> autompg_type_in_clause_intersections = new Map<(string, string), int>();
+
+            for (int i = 0; i < queries.Count; i++) //Calculate the RQFs of attribute values and put them in the correct maps
+            {
+                for (int j = 0; j < queries[i].selectedAttributes.Length; j++)
+                {
+                    if (queries[i].selectedAttributes[j])
+                    {
+                        switch (j)
+                        {
+                            case 0: // id, int
+
+                                break;
+                            case 1: // mpg
+                                for (int k = 0; k < queries[i].autompg_mpg.Length; k++)
+                                    intIncrementer.Increment(autompg_mpg_rqf, Bin(queries[i].autompg_mpg[k], autompg_mpg_histowidth), queries[i].times);
+                                break;
+                            case 2: // cylinders
+                                for (int k = 0; k < queries[i].autompg_cylinders.Length; k++)
+                                    intIncrementer.Increment(autompg_cylinders_rqf, Bin(queries[i].autompg_cylinders[k], autompg_cylinders_histowidth), queries[i].times);
+                                break;
+                            case 3: // displacement
+                                for (int k = 0; k < queries[i].autompg_displacement.Length; k++)
+                                    intIncrementer.Increment(autompg_displacement_rqf, Bin(queries[i].autompg_displacement[k], autompg_displacement_histowidth), queries[i].times);
+                                break;
+                            case 4: // horsepower
+                                for (int k = 0; k < queries[i].autompg_horsepower.Length; k++)
+                                    intIncrementer.Increment(autompg_horsepower_rqf, Bin(queries[i].autompg_horsepower[k], autompg_horsepower_histowidth), queries[i].times);
+                                break;
+                            case 5: // weight
+                                for (int k = 0; k < queries[i].autompg_weight.Length; k++)
+                                    intIncrementer.Increment(autompg_weight_rqf, Bin(queries[i].autompg_weight[k], autompg_weight_histowidth), queries[i].times);
+                                break;
+                            case 6: // acceleration
+                                for (int k = 0; k < queries[i].autompg_acceleration.Length; k++)
+                                    intIncrementer.Increment(autompg_acceleration_rqf, Bin(queries[i].autompg_acceleration[k], autompg_acceleration_histowidth), queries[i].times);
+                                break;
+                            case 7: // model_year
+                                for (int k = 0; k < queries[i].autompg_model_year.Length; k++)
+                                    intIncrementer.Increment(autompg_model_year_rqf, queries[i].autompg_model_year[k], queries[i].times);
+                                break;
+                            case 8: // origin
+                                for (int k = 0; k < queries[i].autompg_origin.Length; k++)
+                                    intIncrementer.Increment(autompg_origin_rqf, queries[i].autompg_origin[k], queries[i].times);
+                                break;
+                            case 9: // brand
+                                if (queries[i].autompg_brand.Length > 1)
+                                {
+                                    (string, string)[] combinations = HelperFunctions.tupleCombinations(queries[i].autompg_brand);
+                                    for (int l = 0; l < combinations.Length; l++)
+                                        stringTupleIncrementer.Increment(autompg_brand_in_clause_intersections, combinations[l], queries[i].times);
+                                    for (int m = 0; m < queries[i].autompg_brand.Length; m++)
+                                        stringIncrementer.Increment(autompg_brand_in_clause_occurences, queries[i].autompg_brand[m], queries[i].times); ;
+                                } 
+                                for (int k = 0; k < queries[i].autompg_brand.Length; k++)
+                                    stringIncrementer.Increment(autompg_brand_rqf, queries[i].autompg_brand[k], queries[i].times);
+                                break;
+                            case 10: // model
+                                if (queries[i].autompg_model.Length > 1)
+                                {
+                                    (string, string)[] combinations = HelperFunctions.tupleCombinations(queries[i].autompg_model);
+                                    for (int l = 0; l < combinations.Length; l++)
+                                        stringTupleIncrementer.Increment(autompg_model_in_clause_intersections, combinations[l], queries[i].times);
+                                    for (int m = 0; m < queries[i].autompg_model.Length; m++)
+                                        stringIncrementer.Increment(autompg_model_in_clause_occurences, queries[i].autompg_model[m], queries[i].times);
+                                }
+                                for (int k = 0; k < queries[i].autompg_model.Length; k++)
+                                    stringIncrementer.Increment(autompg_model_rqf, queries[i].autompg_model[k], queries[i].times);
+                                
+                                break;
+                            case 11: // type
+                                if (queries[i].autompg_type.Length > 1)
+                                {
+                                    (string, string)[] combinations = HelperFunctions.tupleCombinations(queries[i].autompg_type);
+                                    for (int l = 0; l < combinations.Length; l++)
+                                        stringTupleIncrementer.Increment(autompg_type_in_clause_intersections, combinations[l], queries[i].times);
+                                    for (int m = 0; m < queries[i].autompg_type.Length; m++)
+                                        stringIncrementer.Increment(autompg_type_in_clause_occurences, queries[i].autompg_type[m], queries[i].times);
+                                }
+                                for (int k = 0; k < queries[i].autompg_type.Length; k++)
+                                    stringIncrementer.Increment(autompg_type_rqf, queries[i].autompg_type[k], queries[i].times);
+                                break;
+                        }
+                    }
+                }
+                
+            }
+
+            //Console.WriteLine("test begint!");
+            //for (int i = 0; i < autompg_brand_rqf.tuples.Count; i++)
+            //{
+            //    Console.WriteLine(autompg_brand_rqf.tuples[i]);
+            //}
+
+            //Console.WriteLine(autompg_brand_rqf.tuples);
+
+            Map<int, float> autompg_mpg_qf = HelperFunctions.normalizeToOne(autompg_mpg_rqf.tuples);
+            Map<int, float> autompg_cylinders_qf = HelperFunctions.normalizeToOne(autompg_cylinders_rqf.tuples);
+            Map<int, float> autompg_displacement_qf = HelperFunctions.normalizeToOne(autompg_displacement_rqf.tuples);
+            Map<int, float> autompg_horsepower_qf = HelperFunctions.normalizeToOne(autompg_horsepower_rqf.tuples);
+            Map<int, float> autompg_weight_qf = HelperFunctions.normalizeToOne(autompg_weight_rqf.tuples);
+            Map<int, float> autompg_acceleration_qf = HelperFunctions.normalizeToOne(autompg_acceleration_rqf.tuples);
+            Map<int, float> autompg_model_year_qf = HelperFunctions.normalizeToOne(autompg_model_year_rqf.tuples);
+            Map<int, float> autompg_origin_qf = HelperFunctions.normalizeToOne(autompg_origin_rqf.tuples);
+            Map<string, float> autompg_brand_qf = HelperFunctions.normalizeToOne(autompg_brand_rqf.tuples);
+            Map<string, float> autompg_model_qf = HelperFunctions.normalizeToOne(autompg_model_rqf.tuples);
+            Map<string, float> autompg_type_qf = HelperFunctions.normalizeToOne(autompg_type_rqf.tuples);
+            
+            if(autompg_brand_qf.TryGetValue("volkswagen", out float value))
+                Console.WriteLine("volkswagen qf: " + value);
+            //Console.WriteLine("acceleration bucket 2: " + autompg_acceleration_qf[2]);
+            //Console.WriteLine("model year 70: " + autompg_model_year_qf[70]);
 
 
+            Map<(string,string), float> autompg_brand_jacquard = new Map<(string,string), float>();
+            Map<(string,string), float> autompg_model_jacquard = new Map<(string,string), float>();
+            Map<(string,string), float> autompg_type_jacquard = new Map<(string,string), float>();
 
 
+            for (int i = 0; i < autompg_brand_in_clause_intersections.tuples.Count; i++)
+            {
+                ((string, string), int) tuple = autompg_brand_in_clause_intersections.tuples[i];
+                int numerator = tuple.Item2;
+                int denominator = -numerator;
+                if (autompg_brand_in_clause_occurences.TryGetValue(tuple.Item1.Item1, out int occurences))
+                    denominator += occurences;
+                if (autompg_brand_in_clause_occurences.TryGetValue(tuple.Item1.Item2, out int occurences2))
+                    denominator += occurences2;
+                autompg_brand_jacquard.Add(tuple.Item1, ((float)numerator) / ((float)denominator));
+            }
+            for (int i = 0; i < autompg_model_in_clause_intersections.tuples.Count; i++)
+            {
+                ((string, string), int) tuple = autompg_model_in_clause_intersections.tuples[i];
+                int numerator = tuple.Item2;
+                int denominator = -numerator;
+                if (autompg_model_in_clause_occurences.TryGetValue(tuple.Item1.Item1, out int occurences))
+                    denominator += occurences;
+                if (autompg_model_in_clause_occurences.TryGetValue(tuple.Item1.Item2, out int occurences2))
+                    denominator += occurences2;
+                autompg_model_jacquard.Add(tuple.Item1, ((float)numerator) / ((float)denominator));
+            }
+            for (int i = 0; i < autompg_type_in_clause_intersections.tuples.Count; i++)
+            {
+                ((string, string), int) tuple = autompg_type_in_clause_intersections.tuples[i];
+                int numerator = tuple.Item2;
+                int denominator = -numerator;
+                if (autompg_type_in_clause_occurences.TryGetValue(tuple.Item1.Item1, out int occurences))
+                    denominator += occurences;
+                if (autompg_type_in_clause_occurences.TryGetValue(tuple.Item1.Item2, out int occurences2))
+                    denominator += occurences2;
+                autompg_type_jacquard.Add(tuple.Item1, ((float)numerator) / ((float)denominator));
+            }
 
+            
 
-
-
-
+            /*
 
             SQLiteCommand command;
             SQLiteDataReader reader;
-
-            return;
+            /*
             while (true)
             {
                 reader = (command = new SQLiteCommand(Console.ReadLine(), autompgDatabaseConnection)).ExecuteReader();
@@ -500,23 +640,25 @@ namespace ConsoleApp1
                 }
                 else Console.WriteLine("No rows found.");
 
-                    
-                
+
 
                 // Query for the item
 
-                autompgDatabaseConnection.Close();
+                
             }
+            */
 
-            static string FirstN(char[] chars, int n)
-            {
-                char[] result = new char[n];
-                for (int i = 0; i < n; i++)
-                    result[i] = chars[i];
-                return new string(result);
-            }
+
+
+            autompgDatabaseConnection.Close();
         }
-
+        static string FirstN(char[] chars, int n)
+        {
+            char[] result = new char[n];
+            for (int i = 0; i < n; i++)
+                result[i] = chars[i];
+            return new string(result);
+        }
         static void createMetaDB()
         {
 
@@ -547,6 +689,84 @@ namespace ConsoleApp1
             //Alles inlezen en dan die andere dingen van de workload termen berekenen
         }
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -691,6 +911,18 @@ namespace ConsoleApp1
             else
             {
                 map.Add(item, 1);
+            }
+        }
+
+        public void Increment(Map<T, int> map, T item, int times)
+        {
+            if (map.indices.TryGetValue(item, out int index))
+            {
+                map.tuples[index] = (map.tuples[index].Item1, map.tuples[index].Item2 + times);
+            }
+            else
+            {
+                map.Add(item, times);
             }
         }
     }
