@@ -42,7 +42,7 @@ namespace ConsoleApp1
         {
             Console.Write("[" + ints[0]);
             for (int i = 1; i < ints.Length; i++)
-                Console.Write("," + ints[i]);
+                Console.Write("|" + ints[i], CultureInfo.InvariantCulture);
             Console.Write("]");
         }
         public static void DisplayStrings(string[] ints)
@@ -178,6 +178,18 @@ namespace ConsoleApp1
         {
             float standardDeviation = CalculateStandardDeviation(array);
             return 1.06f * standardDeviation * ((float)Math.Pow((double)array.Length, -0.2d));
+        }
+
+        public static float[] arrayToFloat(int[] array)
+        {
+            float[] result = new float[array.Length];
+
+            for(int i = 0; i < array.Length; i++)
+            {
+                result[i] = (float)array[i];
+            }
+
+            return result;
         }
     }
 }

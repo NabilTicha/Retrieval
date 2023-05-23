@@ -1,4 +1,5 @@
 ﻿using System.Data.SQLite;
+using System.Globalization;
 using System.Web;
 
 namespace ConsoleApp1
@@ -60,14 +61,15 @@ namespace ConsoleApp1
             for (int i = p; i < q; i++)
                 commandValueString[i - p] = autompgInsertCommand[i];
             string[] values = new string(commandValueString).Split(',', StringSplitOptions.TrimEntries);
+            
             return (
                 int.Parse(values[0]),
-                float.Parse(values[1]),
+                float.Parse(values[1], CultureInfo.InvariantCulture),
                 int.Parse(values[2]),
-                float.Parse(values[3]),
-                float.Parse(values[4]),
-                float.Parse(values[5]),
-                float.Parse(values[6]),
+                float.Parse(values[3], CultureInfo.InvariantCulture),
+                float.Parse(values[4], CultureInfo.InvariantCulture),
+                float.Parse(values[5], CultureInfo.InvariantCulture),
+                float.Parse(values[6], CultureInfo.InvariantCulture),
                 int.Parse(values[7]),
                 int.Parse(values[8]),
                 values[9],
@@ -603,7 +605,19 @@ namespace ConsoleApp1
                 autompg_type_jacquard.Add(tuple.Item1, ((float)numerator) / ((float)denominator));
             }
 
-            
+            float[] autompg_h = new float[9];
+
+            autompg_h[0] = 0;
+            autompg_h[1] = HelperFunctions.CalculateH(autompg_mpg);
+            autompg_h[2] = HelperFunctions.CalculateH(HelperFunctions.arrayToFloat(autompg_cylinders));
+            autompg_h[3] = HelperFunctions.CalculateH(autompg_displacement);
+            autompg_h[4] = HelperFunctions.CalculateH(autompg_horsepower);
+            autompg_h[5] = HelperFunctions.CalculateH(autompg_weight);
+            autompg_h[6] = HelperFunctions.CalculateH(autompg_acceleration);
+            autompg_h[7] = HelperFunctions.CalculateH(HelperFunctions.arrayToFloat(autompg_model_year));
+            autompg_h[8] = HelperFunctions.CalculateH(HelperFunctions.arrayToFloat(autompg_origin));
+
+            HelperFunctions.DisplayFloats(autompg_h);
 
             /*
 
