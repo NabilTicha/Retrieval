@@ -1,0 +1,160 @@
+CREATE TABLE mpg_idf (
+    key integer NOT NULL,
+    idf real,
+    PRIMARY KEY (key)
+);
+
+CREATE TABLE mpg_qf (
+    key integer NOT NULL,
+    qf real,
+    PRIMARY KEY (key)
+);
+
+CREATE TABLE cylinders_idf (
+    key integer NOT NULL,
+    idf real,
+    PRIMARY KEY (key)
+);
+
+CREATE TABLE cylinders_qf (
+    key integer NOT NULL,
+    qf real,
+    PRIMARY KEY (key)
+);
+
+CREATE TABLE displacement_idf (
+    key integer NOT NULL,
+    idf real,
+    PRIMARY KEY (key)
+);
+
+CREATE TABLE displacement_qf (
+    key integer NOT NULL,
+    qf real,
+    PRIMARY KEY (key)
+);
+
+CREATE TABLE horsepower_idf (
+    key integer NOT NULL,
+    idf real,
+    PRIMARY KEY (key)
+);
+
+CREATE TABLE horsepower_qf (
+    key integer NOT NULL,
+    qf real,
+    PRIMARY KEY (key)
+);
+
+CREATE TABLE weight_idf (
+    key integer NOT NULL,
+    idf real,
+    PRIMARY KEY (key)
+);
+
+CREATE TABLE weight_qf (
+    key integer NOT NULL,
+    qf real,
+    PRIMARY KEY (key)
+);
+
+CREATE TABLE acceleration_idf (
+    key integer NOT NULL,
+    idf real,
+    PRIMARY KEY (key)
+);
+
+CREATE TABLE acceleration_qf (
+    key integer NOT NULL,
+    qf real,
+    PRIMARY KEY (key)
+);
+
+CREATE TABLE model_year_idf (
+    key integer NOT NULL,
+    idf real,
+    PRIMARY KEY (key)
+);
+
+CREATE TABLE model_year_qf (
+    key integer NOT NULL,
+    qf real,
+    PRIMARY KEY (key)
+);
+
+CREATE TABLE origin_idf (
+    key integer NOT NULL,
+    idf real,
+    PRIMARY KEY (key)
+);
+
+CREATE TABLE origin_qf (
+    key integer NOT NULL,
+    qf real,
+    PRIMARY KEY (key)
+);
+
+CREATE TABLE brand_idf (
+    key text NOT NULL,
+    idf real,
+    PRIMARY KEY (key)
+);
+
+CREATE TABLE brand_qf (
+    key text NOT NULL,
+    qf real,
+    PRIMARY KEY (key)
+);
+
+CREATE TABLE model_idf (
+    key text NOT NULL,
+    idf real,
+    PRIMARY KEY (key)
+);
+
+CREATE TABLE model_qf (
+    key text NOT NULL,
+    qf real,
+    PRIMARY KEY (key)
+);
+
+CREATE TABLE type_idf (
+    key text NOT NULL,
+    idf real,
+    PRIMARY KEY (key)
+);
+
+CREATE TABLE type_qf (
+    key text NOT NULL,
+    qf real,
+    PRIMARY KEY (key)
+);
+
+CREATE TABLE brand_jacquard (
+    leftKey text NOT NULL,
+    rightKey text NOT NULL,
+    jacquard real,
+    PRIMARY KEY (leftKey, rightKey)
+);
+
+CREATE TABLE model_jacquard (
+    leftKey text NOT NULL,
+    rightKey text NOT NULL,
+    jacquard real,
+    PRIMARY KEY (leftKey, rightKey)
+);
+
+CREATE TABLE type_jacquard (
+    leftKey text NOT NULL,
+    rightKey text NOT NULL,
+    jacquard real,
+    PRIMARY KEY (leftKey, rightKey)
+);
+
+CREATE TABLE h_values (
+    id text NOT NULL,
+    h real,
+    PRIMARY KEY (id)
+);
+
+

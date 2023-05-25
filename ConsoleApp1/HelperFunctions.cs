@@ -191,5 +191,13 @@ namespace ConsoleApp1
 
             return result;
         }
+        public static string RemoveQuotations(string s)
+        {
+            List<char> result = new List<char>();
+            for (int i = 0; i < s.Length; i++)
+                if (s[i] != '\'')
+                    result.Add(s[i]);
+            return new string(result.ToArray());
+        }
     }
 }

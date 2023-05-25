@@ -1,4 +1,5 @@
-﻿using System.Data.SQLite;
+﻿using System.Collections.Generic;
+using System.Data.SQLite;
 using System.Globalization;
 using System.Web;
 
@@ -6,6 +7,7 @@ namespace ConsoleApp1
 {
     internal class Program
     {
+        const bool setupMetaDB = true;
         const bool skipDBsetup = true;
         static SQLiteConnection autompgDatabaseConnection;
         static SQLiteConnection metadbConnection;
@@ -13,6 +15,8 @@ namespace ConsoleApp1
             autompgDatabaseFilepath = "../../../../autompg.db",
             autompgSourceFilepath = "../../../../autompg.sql",
             metadbFilepath = "../../../../metadb.db",
+            metadbSourceFilepath = "../../../../metadb.txt",
+            metaloadFilepath = "../../../../metaload.txt",
             workloadFilepath = "../../../../workload.txt";
 
         const float autompg_mpg_histowidth = 6;// histogram bin width:6
@@ -21,12 +25,13 @@ namespace ConsoleApp1
         const float autompg_horsepower_histowidth = 60;// histo width: 60
         const float autompg_weight_histowidth = 600;// histo width: 600
         const float autompg_acceleration_histowidth = 4;
+        
         static MapIncrement<float> floatIncrementer = new MapIncrement<float>();
         static MapIncrement<int> intIncrementer = new MapIncrement<int>();
         static MapIncrement<string> stringIncrementer = new MapIncrement<string>();
         static MapIncrement<(string,string)> stringTupleIncrementer = new MapIncrement<(string,string)>();
 
-
+        static string[] indexAttributes;
         static Dictionary<string, int> attributeIndices;
         private static int Bin(int input, int histowidth)
         {
@@ -61,7 +66,6 @@ namespace ConsoleApp1
             for (int i = p; i < q; i++)
                 commandValueString[i - p] = autompgInsertCommand[i];
             string[] values = new string(commandValueString).Split(',', StringSplitOptions.TrimEntries);
-            
             return (
                 int.Parse(values[0]),
                 float.Parse(values[1], CultureInfo.InvariantCulture),
@@ -72,9 +76,9 @@ namespace ConsoleApp1
                 float.Parse(values[6], CultureInfo.InvariantCulture),
                 int.Parse(values[7]),
                 int.Parse(values[8]),
-                values[9],
-                values[10],
-                values[11]
+                HelperFunctions.RemoveQuotations(values[9]),
+                HelperFunctions.RemoveQuotations(values[10]),
+                HelperFunctions.RemoveQuotations(values[11])
                 );
         }
         private static bool StrEq(string a, string b)
@@ -197,7 +201,7 @@ namespace ConsoleApp1
             };
             indexAttributes = indexAttributes_;
         }
-        static string[] indexAttributes;
+        
         private static void DisplayQuery(WorkLoadQuery w)
         {
             Console.Write("times: " + w.times);
@@ -212,6 +216,7 @@ namespace ConsoleApp1
         static void Main(string[] args)
         {
             Init();
+
             /*
             string test = "(\'hello\',\'im\',\'bob\')";
             Console.WriteLine(test);
@@ -226,7 +231,7 @@ namespace ConsoleApp1
             //HelperFunctions.DisplayStrings(HelperFunctions.ExtractFromINclause("(\'ddf fd\',\'gtgd\')"));
 
 
-            
+
             // nu nemen we een willekeurige query en lezen we hem in 
             //Console.WriteLine("Query ++++++++++++++++++++++\n" + "7 times: SELECT * FROM autompg WHERE displacement = \'75\' AND model_year = \'74\' AND type IN (\'station wagon\',\'pickup\')");
             //Console.WriteLine("What was read -------------------------");
@@ -290,13 +295,17 @@ namespace ConsoleApp1
                 File.WriteAllText(autompgDatabaseFilepath, String.Empty);
                 File.WriteAllText(metadbFilepath, String.Empty);
             }
-            
+
             autompgDatabaseConnection = new SQLiteConnection("Data Source=" + autompgDatabaseFilepath);
             metadbConnection = new SQLiteConnection("Data Source=" + metadbFilepath);
             // open the connection(s)
             autompgDatabaseConnection.Open();
             metadbConnection.Open();
-            
+
+
+            SQLiteCommand command;
+
+
             // connect with the sources required for filling autompg
             StreamReader autompgSourceStream = new StreamReader(autompgSourceFilepath);
             string autompgSourceContents = autompgSourceStream.ReadToEnd();
@@ -339,7 +348,7 @@ namespace ConsoleApp1
             Console.WriteLine("last sql command:\n" + sqlCommands[sqlCommands.Length - 1]);
             for (int i = 0; i < sqlCommands.Length; i++)
             {
-                    
+
 
                 if (i > 0)
                 {
@@ -380,7 +389,7 @@ namespace ConsoleApp1
                     SQLiteCommand autompgCommand = new SQLiteCommand(sqlCommands[i], autompgDatabaseConnection);
                     autompgCommand.ExecuteNonQuery();
                 }
-                   
+
                 Console.WriteLine("at query " + i);
             }
 
@@ -505,7 +514,7 @@ namespace ConsoleApp1
                                         stringTupleIncrementer.Increment(autompg_brand_in_clause_intersections, combinations[l], queries[i].times);
                                     for (int m = 0; m < queries[i].autompg_brand.Length; m++)
                                         stringIncrementer.Increment(autompg_brand_in_clause_occurences, queries[i].autompg_brand[m], queries[i].times); ;
-                                } 
+                                }
                                 for (int k = 0; k < queries[i].autompg_brand.Length; k++)
                                     stringIncrementer.Increment(autompg_brand_rqf, queries[i].autompg_brand[k], queries[i].times);
                                 break;
@@ -520,7 +529,7 @@ namespace ConsoleApp1
                                 }
                                 for (int k = 0; k < queries[i].autompg_model.Length; k++)
                                     stringIncrementer.Increment(autompg_model_rqf, queries[i].autompg_model[k], queries[i].times);
-                                
+
                                 break;
                             case 11: // type
                                 if (queries[i].autompg_type.Length > 1)
@@ -537,7 +546,7 @@ namespace ConsoleApp1
                         }
                     }
                 }
-                
+
             }
 
             //Console.WriteLine("test begint!");
@@ -559,16 +568,16 @@ namespace ConsoleApp1
             Map<string, float> autompg_brand_qf = HelperFunctions.normalizeToOne(autompg_brand_rqf.tuples);
             Map<string, float> autompg_model_qf = HelperFunctions.normalizeToOne(autompg_model_rqf.tuples);
             Map<string, float> autompg_type_qf = HelperFunctions.normalizeToOne(autompg_type_rqf.tuples);
-            
-            if(autompg_brand_qf.TryGetValue("volkswagen", out float value))
+
+            if (autompg_brand_qf.TryGetValue("volkswagen", out float value))
                 Console.WriteLine("volkswagen qf: " + value);
             //Console.WriteLine("acceleration bucket 2: " + autompg_acceleration_qf[2]);
             //Console.WriteLine("model year 70: " + autompg_model_year_qf[70]);
 
 
-            Map<(string,string), float> autompg_brand_jacquard = new Map<(string,string), float>();
-            Map<(string,string), float> autompg_model_jacquard = new Map<(string,string), float>();
-            Map<(string,string), float> autompg_type_jacquard = new Map<(string,string), float>();
+            Map<(string, string), float> autompg_brand_jacquard = new Map<(string, string), float>();
+            Map<(string, string), float> autompg_model_jacquard = new Map<(string, string), float>();
+            Map<(string, string), float> autompg_type_jacquard = new Map<(string, string), float>();
 
 
             for (int i = 0; i < autompg_brand_in_clause_intersections.tuples.Count; i++)
@@ -662,8 +671,167 @@ namespace ConsoleApp1
             }
             */
 
+            // File.Open(metadbFilepath, FileMode.Open, FileAccess.Read);
+            //// File.WriteAllText(metadbFilepath, String.Empty);
+            ///
+
+            
+
+            if (setupMetaDB)
+            {
+                string sqlStatements = File.ReadAllText(metadbSourceFilepath);
+
+                using (SQLiteConnection connection = new SQLiteConnection("Data Source=" + metadbFilepath))
+                {
+                    connection.Open();
+                    // Execute SQL statements
+                    string[] statements = sqlStatements.Split(';');
+
+                    command = new SQLiteCommand("", connection);
+                    
+                    foreach (string statement in statements)
+                    {
+                        // Set the current SQL statement
+                        command.CommandText = statement.Trim();
+
+                        // Execute the SQL statement
+                        command.ExecuteNonQuery();
+                    }
+                    
+                    connection.Close();
+                }
+            }
+
+            // idf's
+
+            //string[] attributes = { 
+             //   "mpg", 
+              //  "cylinders", 
+             //   "displacement", "horsepower", "weight", "acceleration", "model_year", "origin", "brand", "model", "type"};
+
+            Map<int, float>[] attr_num_idfs = 
+            {
+                null,
+                autompg_mpg_idfs, 
+                autompg_cylinders_idfs,
+                autompg_displacement_idfs,
+                autompg_horsepower_idfs,
+                autompg_weight_idfs,
+                autompg_acceleration_idfs,
+                autompg_model_year_idfs,
+                autompg_origin_idfs
+
+            };
+            Map<int, float>[] attr_num_qf =
+            {
+                null,
+                autompg_mpg_qf,
+                autompg_cylinders_qf,
+                autompg_displacement_qf,
+                autompg_horsepower_qf,
+                autompg_weight_qf,
+                autompg_acceleration_qf,
+                autompg_model_year_qf,
+                autompg_origin_qf,
+
+            };
+            Map<string, float>[] attr_text_idfs =
+            {
+                autompg_brand_idfs,
+                autompg_model_idfs,
+                autompg_type_idfs
+            };
+            Map<string, float>[] attr_text_qf =
+            {
+                autompg_brand_qf,
+                autompg_model_qf,
+                autompg_type_qf
+            };
+            Map<int, float>[][] attr_num_idf_qf = { attr_num_idfs, attr_num_qf };
+            Map<string, float>[][] attr_text_idf_qf = { attr_text_idfs, attr_text_qf };
+
+            string insertStatement_0 = "INSERT INTO ",
+                   insertStatement_1 = " VALUES(",
+                   insertStatement_2 = ", ",
+                   insertStatement_3 = ");\n";
+
+            string[] idf_qf = { "_idf", "_qf" };
+            StreamWriter metaload_writer = new StreamWriter(metaloadFilepath);
+            command = new SQLiteCommand("", metadbConnection);
+            // fill in idf's and qfs
+            if (setupMetaDB)
+                for (int i = 1; i < attr_num_idfs.Length; i++)
+                    for (int j = 0; j < idf_qf.Length; j++)
+                        for(int k = 0; k < attr_num_idf_qf[j][i].tuples.Count; k++)
+                        {
+                            (int,float) tuple = attr_num_idf_qf[j][i].tuples[k];
+                            string statement = insertStatement_0 + indexAttributes[i] + idf_qf[j] + insertStatement_1 + tuple.Item1 + insertStatement_2 + tuple.Item2.ToString(CultureInfo.InvariantCulture) + insertStatement_3;
+                            metaload_writer.Write(statement);
+
+                            // Set the current SQL statement
+                            command.CommandText = statement.Trim();
+
+                            // Execute the SQL statement
+                            command.ExecuteNonQuery();
+                        }
+            if (setupMetaDB)
+                for (int i = 0; i < attr_text_idfs.Length; i++)
+                    for (int j = 0; j < idf_qf.Length; j++)
+                        for (int k = 0; k < attr_text_idf_qf[j][i].tuples.Count; k++)
+                        {
+                            (string, float) tuple = attr_text_idf_qf[j][i].tuples[k];
+                            string statement = insertStatement_0 + indexAttributes[i + 9] + idf_qf[j] + insertStatement_1 + "\'"+ tuple.Item1+"\'" + insertStatement_2 + tuple.Item2.ToString(CultureInfo.InvariantCulture) + insertStatement_3;
+                            metaload_writer.Write(statement);
+                            // Set the current SQL statement
+                            command.CommandText = statement.Trim();
+
+                            // Execute the SQL statement
+                            
+                            command.ExecuteNonQuery();
+
+                            
+                        }
+            // jacquard's
+            Map<(string, string), float>[] attr_text_jacquard =
+            {
+                autompg_brand_jacquard,
+                autompg_model_jacquard,
+                autompg_type_jacquard
+            };
+            if (setupMetaDB)
+                for (int i = 0; i < attr_text_jacquard.Length; i++)
+                    for (int j = 0; j < attr_text_jacquard[i].tuples.Count; j++)
+                    {
+                        (string, string, float) tuple = (
+                            attr_text_jacquard[i].tuples[j].Item1.Item1,
+                            attr_text_jacquard[i].tuples[j].Item1.Item2,
+                            attr_text_jacquard[i].tuples[j].Item2
+                            );
+                        string statement = insertStatement_0 + indexAttributes[i + 9] + "_jacquard" + insertStatement_1 + "\'"+ tuple.Item1 + "\'"+ insertStatement_2 +
+                          "\'"+  tuple.Item2 + "\'"+ insertStatement_2 + tuple.Item3.ToString(CultureInfo.InvariantCulture) + insertStatement_3;
+                        metaload_writer.Write(statement);
+                        // Set the current SQL statement
+                        command.CommandText = statement.Trim();
+
+                        // Execute the SQL statement
+
+                        command.ExecuteNonQuery();
+                    }
+            // h values
+            for (int i = 0; i < autompg_h.Length; i++)
+            {
+                string statement = insertStatement_0 + "h_values" + insertStatement_1 + "\'" +
+                    indexAttributes[i]+ "\'" + insertStatement_2 + autompg_h[i].ToString(CultureInfo.InvariantCulture) + insertStatement_3;
+                metaload_writer.Write(statement);
+                command.CommandText = statement.Trim();
+                command.ExecuteNonQuery();
+            }
 
 
+
+            metaload_writer.Close();
+
+            metadbConnection.Close();
             autompgDatabaseConnection.Close();
         }
         static string FirstN(char[] chars, int n)
